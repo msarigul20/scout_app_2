@@ -58,12 +58,13 @@ import 'auth.dart';
     }
     getUser();
 */ // get user idA
-// TODO: Needs to add or fix these:
-//1-)Every user changing same data.
+
+// FIXME: Needs to add or fix these:
+// 1-)Every user changing same data.
 //2-)List title will change.
-////3-)Apply SingleScrollChild method to avoid oversize problem
-////4-)Add delete functionality with user control.
-////5-)Search functionality
+// 3-)Apply SingleScrollChild method to avoid oversize problem
+//4-)Add delete functionality with user control.
+//5-)Search functionality
 
 
 
@@ -100,30 +101,37 @@ class HomePage extends StatelessWidget {
             )
           ],
         ),
-        body: Center(
-          child: new Container(
-            child: new Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                new Text("HELLO MANAGER", style: new TextStyle(fontSize: 32.0)),
-                RaisedButton(
-                    child: Text("Try Button", style: TextStyle(fontSize: 20.0)),
-                    onPressed: () {
-                      //todo try some thing
-                    }),
-                RaisedButton(
-                    child:
-                        Text("List Players", style: TextStyle(fontSize: 20.0)),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  MyHomePage(title: "Player List Page")));
-                    }),
-                AddStuff(),
-                DeleteAllStuff()
-              ],
+        body: SingleChildScrollView(
+          child: Center(
+            child: new Container(
+              child: new Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  new Text("HELLO MANAGER", style: new TextStyle(fontSize: 32.0)),
+           /*       RaisedButton(
+                      child: Text("Try Button", style: TextStyle(fontSize: 20.0)),
+                      onPressed: () {
+                        //todo try some thing
+                      }),*/
+                  RaisedButton(
+                      child:
+                          Text("List Players", style: TextStyle(fontSize: 20.0)),
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    MyHomePage(title: "Player List Page")));
+                      }),
+                  RaisedButton(
+                      child: Text("Add with user", style: new TextStyle(fontSize: 20.0)),
+                      onPressed: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => AddPlayer()));
+                      }),
+                  DeleteAllStuff()
+                ],
+              ),
             ),
           ),
         ));
@@ -151,12 +159,12 @@ class DeleteAllStuff extends StatelessWidget {
   }
 }
 
-class AddStuff extends StatelessWidget {
+/*class AddStuff extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        RaisedButton(
+   *//*     RaisedButton(
           child: Text(
             "Add Test Data Mustafa",
             style: new TextStyle(fontSize: 20.0),
@@ -199,17 +207,11 @@ class AddStuff extends StatelessWidget {
               "age": "21",
             });
           },
-        ), // cem
-        RaisedButton(
-            child: Text("Add with user", style: new TextStyle(fontSize: 20.0)),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AddPlayer()));
-            }),
+        ), // cem*//* // adding test data buttons
       ],
     );
   }
-}
+}*/
 
 class AddPlayer extends StatefulWidget {
   @override
