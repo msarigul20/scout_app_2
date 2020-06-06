@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scoutapp/ListPage.dart';
 import 'package:flutter/material.dart';
 import 'package:scoutapp/auth.dart';
+
 import 'auth.dart';
 
 /*
@@ -52,26 +54,33 @@ import 'auth.dart';
         );
 */ // delete all documents
 /*
-    Future getUser() async {
-      String user = await this.auth.currentUser();
-      print(user);
-    }
-    getUser();
+Future getUser() async {
+  String user = await this.auth.currentUser();
+  print(user);
+}
+getUser();
 */ // get user idA
+/*Future myPlayers() async {
+  var firestore = Firestore.instance;
+  QuerySnapshot qn = await firestore.collection("players").where("uID", isEqualTo: this.widget.my_uID).getDocuments();
+  print("My_uID: "+this.widget.my_uID);
+  return qn.documents;
+}*/ // doQuery(ListPage)
+
 
 // FIXME: Needs to add or fix these:
-// 1-)Every user changing same data.
-//2-)List title will change.
-// 3-)Apply SingleScrollChild method to avoid oversize problem
-//4-)Add delete functionality with user control.
-//5-)Search functionality
-
-
-
+//1-)Add delete functionality with user control.
+//2-)Search functionality
 
 class HomePage extends StatelessWidget {
   HomePage({this.auth, this.onSignedOut});
 
+
+
+  Future getUser() async {
+    String user = await this.auth.currentUser();
+    print(user);
+  }
   final BaseAuth auth;
   final VoidCallback onSignedOut;
 
@@ -82,6 +91,7 @@ class HomePage extends StatelessWidget {
     } catch (e) {
       print(e);
     }
+
   }
 
   @override
@@ -101,40 +111,44 @@ class HomePage extends StatelessWidget {
             )
           ],
         ),
-        body: SingleChildScrollView(
-          child: Center(
+        body:Center(
             child: new Container(
               child: new Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   new Text("HELLO MANAGER", style: new TextStyle(fontSize: 32.0)),
-           /*       RaisedButton(
+                  RaisedButton(
                       child: Text("Try Button", style: TextStyle(fontSize: 20.0)),
                       onPressed: () {
-                        //todo try some thing
-                      }),*/
+                       // print(FirebaseAuth.instance.currentUser());
+                        print("try button pressed");
+                       //    query();
+
+                      }),
                   RaisedButton(
                       child:
                           Text("List Players", style: TextStyle(fontSize: 20.0)),
-                      onPressed: () {
+                      onPressed: () async {
+                        FirebaseUser tempUser = await FirebaseAuth.instance.currentUser();
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    MyHomePage(title: "Player List Page")));
+                                    ListHomePage(title: "List Page",uID: tempUser.uid,)));
                       }),
                   RaisedButton(
                       child: Text("Add with user", style: new TextStyle(fontSize: 20.0)),
                       onPressed: () {
                         Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => AddPlayer()));
+                            MaterialPageRoute(builder: (context) => AddPlayerPage()));
                       }),
                   DeleteAllStuff()
                 ],
               ),
             ),
           ),
-        ));
+
+    );
   }
 }
 
@@ -164,7 +178,7 @@ class DeleteAllStuff extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-   *//*     RaisedButton(
+      RaisedButton(
           child: Text(
             "Add Test Data Mustafa",
             style: new TextStyle(fontSize: 20.0),
@@ -213,15 +227,19 @@ class DeleteAllStuff extends StatelessWidget {
   }
 }*/
 
-class AddPlayer extends StatefulWidget {
+class AddPlayerPage extends StatefulWidget {
+
   @override
-  _AddPlayerState createState() => _AddPlayerState();
+  _AddPlayerPageState createState() => _AddPlayerPageState();
+
+
 }
 
-class _AddPlayerState extends State<AddPlayer> {
+class _AddPlayerPageState extends State<AddPlayerPage> {
   final myNameController = TextEditingController();
   final mySurnameController = TextEditingController();
   final myAgeController = TextEditingController();
+
 
   @override
   void dispose() {
@@ -272,9 +290,11 @@ class _AddPlayerState extends State<AddPlayer> {
                   // to get id of owner(pID)
                   DocumentReference ref = await Firestore.instance
                       .collection("players")
-                      .add({"pID": "", "name": "", "surname": "", "age": ""});
+                      .add({"uID":"","pID": "", "name": "", "surname": "", "age": ""});
                   String tempDocID = ref.documentID;
+                  FirebaseUser tempUser = await FirebaseAuth.instance.currentUser();
                   ref.setData({
+                    "uID":tempUser.uid,
                     "pID": tempDocID,
                     "name": myNameController.text,
                     "surname": mySurnameController.text,

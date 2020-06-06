@@ -1,10 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'auth.dart';
 class LoginPage extends StatefulWidget {
   LoginPage({this.auth,this.onSignedIn});
   final BaseAuth auth;
   final VoidCallback onSignedIn;
-  
+
 
   @override
   State<StatefulWidget> createState() => new _LoginPageState();
@@ -14,7 +15,7 @@ enum FormType { login, register }
 
 class _LoginPageState extends State<LoginPage> {
   final formKey = new GlobalKey<FormState>();
-  
+
   String _email;
   String _password;
   FormType _formType = FormType.login;
@@ -30,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void validateAndSubmit() async {
-    
+
     if (validateAndSave()) {
       try {
         if(_formType == FormType.login) {
@@ -42,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
           print("Registered user : $userId");
         }
         widget.onSignedIn();
-        
+
       }
       catch (e) {
         print("Error : $e");
@@ -74,9 +75,11 @@ class _LoginPageState extends State<LoginPage> {
         padding: EdgeInsets.all(16.0),
         child: new Form(
           key: formKey,
-          child: new Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: buildInputs() + buildSubmitButtons()),
+          child: SingleChildScrollView(
+            child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: showLogo()+buildInputs() + buildSubmitButtons()),
+          ),
         ),
       ),
     );
@@ -128,4 +131,14 @@ class _LoginPageState extends State<LoginPage> {
       ];
     }
   }
+
+  List<Widget> showLogo() {
+    return [
+      new Container(
+        child:Image(height: 150,width: 150,image: AssetImage('assets/images/appLogo.png')),
+      )
+    ];
+  }
+
+
 }

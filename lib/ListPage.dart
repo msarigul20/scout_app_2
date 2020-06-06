@@ -1,37 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:scoutapp/home_page.dart';
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+class ListHomePage extends StatefulWidget {
+  ListHomePage({Key key, this.title, this.uID}) : super(key: key);
   final String title;
+  final String uID;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _ListHomePageState createState() => _ListHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _ListHomePageState extends State<ListHomePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: new AppBar(
           title: new Text(widget.title),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: (){
+                print("Search Tıklandı");
+              },
+            )
+          ],
         ),
-        body: ListPage());
+        body: ListPage(widget.uID));
   }
 }
 
 class ListPage extends StatefulWidget {
+  String my_uID;
+
+  ListPage(this.my_uID);
+
   @override
   _ListPageState createState() => _ListPageState();
 }
 
 class _ListPageState extends State<ListPage> {
-  Future getPlayers() async {
-    var firestore = Firestore.instance;
-    QuerySnapshot qn = await firestore.collection("players").getDocuments();
-    return qn.documents;
-  }
-
   navigateToDetail(DocumentSnapshot player) {
     Navigator.push(
         context,
@@ -50,32 +59,146 @@ class _ListPageState extends State<ListPage> {
                 )));
   }
 
+  Future myPlayers() async {
+    var firestore = Firestore.instance;
+    QuerySnapshot qn = await firestore
+        .collection("players")
+        .where("uID", isEqualTo: this.widget.my_uID)
+        .getDocuments();
+    print("My_uID: " + this.widget.my_uID);
+    return qn.documents;
+  }
+
+  Future getCurrentID() async {
+    FirebaseUser tempUser = await FirebaseAuth.instance.currentUser();
+    return tempUser.uid;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
+
         child: Container(
-            child: FutureBuilder(
-      future: getPlayers(),
-      builder: (_, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: Text("Loading",style: TextStyle(fontSize: 32.0),),
-          );
-        } else {
-          return ListView.builder(
-              itemCount: snapshot.data.length,
-              itemBuilder: (_, index) {
-                return ListTile(
-                  title: Text(snapshot.data[index].data["name"] +
-                      " " +
-                      snapshot.data[index].data["surname"]),
-                  onTap: () => navigateToDetail(snapshot.data[index]),
-                  onLongPress: () => navigateToEdit(snapshot.data[index]),
-                );
-              });
-        }
-      },
-    )));
+
+      child: FutureBuilder(
+        future: myPlayers(),
+        builder: (_, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: Text(
+                "Loading",
+                style: TextStyle(fontSize: 32.0),
+              ),
+            );
+          }
+          else if (snapshot.data.length == 0) {
+            return Card(
+
+              child: InkWell(
+
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "There is no player on your list!",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text("Please add a new player in main menu.",
+                          style:TextStyle(fontSize: 15,color: Colors.grey)),
+                        RaisedButton(
+                          child: Text("Add New"),
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => AddPlayerPage()));
+                          },
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            );
+          }
+          else {
+            return ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (_, index) {
+                  print(snapshot.data.length);
+                  return Column(
+                    children: <Widget>[
+                      Card(
+                        child: InkWell(
+                          child: Row(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.symmetric(
+                                  vertical: 35,
+                                  horizontal: 15,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.lightGreenAccent,
+                                    width: 2,
+                                  ),
+                                ),
+                                padding: EdgeInsets.all(5),
+                                child: Text(
+                                  '${snapshot.data[index].data["name"].toString().trim().toUpperCase()[0]}' +
+                                      '${snapshot.data[index].data["surname"].toString().trim().toUpperCase()[0]}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                    color: Colors.lightBlueAccent,
+                                  ),
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        snapshot.data[index].data["name"].trim() +
+                                            ' ' +
+                                            snapshot.data[index].data["surname"].trim(),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  Row(
+                                    children: <Widget>[
+                                      Text("Age: ",style: TextStyle(color: Colors.grey),),
+                                      Text(snapshot.data[index].data["age"].trim()),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                          onTap: () => navigateToDetail(snapshot.data[index]),
+                          onLongPress: () => navigateToEdit(snapshot.data[index]),
+                        ),
+                      ),
+                    ],
+                  );
+                });
+          }
+        },
+      ),
+    ));
   }
 }
 
@@ -100,18 +223,197 @@ class _DetailedPageState extends State<DetailedPage> {
             "Info"),
       ),
       body: Container(
+        padding: EdgeInsets.fromLTRB(10, 30, 10, 10),
+        height: 450,
+        width: double.maxFinite,
         child: Card(
-          child: ListTile(
-            title: Text(widget.player.data["name"] +
-                " " +
-                widget.player.data["surname"]),
-            subtitle: Text(widget.player.data["age"]),
+          elevation: 5,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Stack(
+              children: <Widget>[
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.person_pin,
+                            size: 55.0,
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          CardNameTag(),
+                        ],
+                      ),
+                      Row(
+                        children: <Widget>[
+                          SizedBox(
+                            height: 30,
+                          )
+                        ],
+                      ),
+                      Row(
+                        children: <Widget>[InfoPlayerDetail()],
+                      ),
+                      Row(
+                        children: <Widget>[
+                          SizedBox(
+                            height: 30,
+                          )
+                        ],
+                      ),
+                      InfoPlayerDetail2(),
+                      Row(
+                        children: <Widget>[
+                          SizedBox(
+                            height: 30,
+                          )
+                        ],
+                      ),
+                      InfoPlayerDetail3()
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  // ignore: non_constant_identifier_names
+  Widget CardNameTag() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: RichText(
+        text: TextSpan(
+          text:
+              widget.player.data["name"] + " " + widget.player.data["surname"],
+          style: TextStyle(
+              fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
+          children: <TextSpan>[
+            TextSpan(
+                text: "\n" + widget.player.data["pID"],
+                style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ignore: non_constant_identifier_names
+  Widget InfoPlayerDetail() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20.0),
+        child: Row(
+          children: <Widget>[
+            RichText(
+              textAlign: TextAlign.left,
+              text: TextSpan(
+                text: "Age: ",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                children: <TextSpan>[
+                  TextSpan(
+                      text: widget.player.data["age"],
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 22)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ignore: non_constant_identifier_names
+  Widget InfoPlayerDetail2() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20.0),
+        child: Row(
+          children: <Widget>[
+            RichText(
+              textAlign: TextAlign.left,
+              text: TextSpan(
+                text: "User ID: ",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                children: <TextSpan>[
+                  TextSpan(
+                      text: "\n" + widget.player.data["uID"],
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 18)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ignore: non_constant_identifier_names
+  Widget InfoPlayerDetail3() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20.0),
+        child: Row(
+          children: <Widget>[
+            RichText(
+              textAlign: TextAlign.left,
+              text: TextSpan(
+                text: "Player ID: ",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                children: <TextSpan>[
+                  TextSpan(
+                      text: "\n" + widget.player.data["pID"],
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 18)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+
+/*ListTile(
+title: Text(widget.player.data["name"] +
+" " +
+widget.player.data["surname"]),
+subtitle: Text(widget.player.data["uID"]),
+)*/
 
 class EditPage extends StatefulWidget {
   final DocumentSnapshot player;
@@ -139,7 +441,7 @@ class _EditPageState extends State<EditPage> {
               " " +
               widget.player.data["surname"] +
               " " +
-              "Info"),
+              "Edit"),
         ),
         body: SingleChildScrollView(
           //fix oversize of keyboard first wrap widget and rename SingleChildScrollView
@@ -152,7 +454,7 @@ class _EditPageState extends State<EditPage> {
                   Form(
                     key: _formKey,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -209,36 +511,39 @@ class _EditPageState extends State<EditPage> {
                             },
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: RaisedButton(
-                            onPressed: () async {
-                              if (_formKey.currentState.validate()) {
-                                DocumentReference ref = Firestore.instance
-                                    .collection("players")
-                                    .document(widget.player.data["pID"]);
-                                ref.setData({
-                                  "pID": widget.player.data["pID"],
-                                  "name": myNameController.text,
-                                  "surname": mySurnameController.text,
-                                  "age": myAgeController.text,
-                                });
-                                /*print(myNameController.text);
-                                print(mySurnameController.text);
-                                print(myAgeController.text);*/
-                              }
-                              Navigator.pop(context);
-                            },
-                            child: Text("Edit"),
+
+                              RaisedButton(
+
+                                onPressed: () async {
+                                  if (_formKey.currentState.validate()) {
+                                    DocumentReference ref = Firestore.instance
+                                        .collection("players")
+                                        .document(widget.player.data["pID"]);
+                                    FirebaseUser tempUser =
+                                        await FirebaseAuth.instance.currentUser();
+                                    ref.setData({
+                                      "uID": tempUser.uid,
+                                      "pID": widget.player.data["pID"],
+                                      "name": myNameController.text,
+                                      "surname": mySurnameController.text,
+                                      "age": myAgeController.text,
+                                    });
+                                    /*print(myNameController.text);
+                                    print(mySurnameController.text);
+                                    print(myAgeController.text);*/
+                                  }
+                                  Navigator.pop(context);
+                                },
+                                child: Text("Edit"),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
               ),
             ),
-          ),
-        ));
+        );
   }
 }
