@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:scoutapp/auth.dart';
-import 'package:scoutapp/home_page.dart';
+import 'screens/auth.dart';
+import 'screens/home_page.dart';
 import 'package:scoutapp/login_page.dart';
-import 'home_page.dart';
+import 'screens/home_page.dart';
 class RootPage extends StatefulWidget{
   final BaseAuth auth;
   RootPage({this.auth});

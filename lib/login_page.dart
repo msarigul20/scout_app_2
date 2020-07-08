@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'auth.dart';
+import 'screens/auth.dart';
 class LoginPage extends StatefulWidget {
   LoginPage({this.auth,this.onSignedIn});
   final BaseAuth auth;
@@ -64,6 +64,12 @@ class _LoginPageState extends State<LoginPage> {
 
     });
   }
+  bool passwordVis = true;
+  void visibility() {
+    setState(() {
+      passwordVis = !passwordVis;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +84,16 @@ class _LoginPageState extends State<LoginPage> {
           child: SingleChildScrollView(
             child: new Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: showLogo()+buildInputs() + buildSubmitButtons()),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+
+                  Center(
+                    child: Column(
+                      children: showLogo()+buildInputs() + buildSubmitButtons(),
+                    ),
+                  )
+
+                ],),
           ),
         ),
       ),
@@ -86,18 +101,27 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   List<Widget> buildInputs() {
+
     return [
       new TextFormField(
-        decoration: new InputDecoration(labelText: 'Email'),
-        validator: (value) => value.isEmpty ? 'Email is required.' : null,
+
+        decoration: new InputDecoration(labelText: 'Email',
+        suffixIcon: Icon(Icons.email)),
+        validator: (value) => value.isEmpty || !value.contains('@') ? 'Email is required.' : null,
         onSaved: (value) => _email = value,
 
 
       ),
       new TextFormField(
-        decoration: new InputDecoration(labelText: 'Password'),
-        obscureText: true,
-        validator: (value) => value.isEmpty ? 'Password is required' : null,
+        decoration: new InputDecoration(labelText: 'Password',
+        suffixIcon: IconButton(
+          onPressed: (){
+            visibility();
+          },
+          icon: passwordVis ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
+        )),
+        obscureText: passwordVis,
+        validator: (value) => value.isEmpty || value.length < 6 ? 'at least 6 characters' : null,
         onSaved: (value) => _password = value,
       )
     ];
@@ -120,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
       return [
         new RaisedButton(
           child: new Text("Create an account", style: new TextStyle(fontSize: 20.0)),
-          onPressed: validateAndSubmit,
+          onPressed:                                                                              validateAndSubmit,
 
         ),
         new FlatButton(

@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:scoutapp/home_page.dart';
+import 'file:///D:/Scout/scout_app_2/lib/screens/home_page.dart';
+import 'package:scoutapp/screens/home_page.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class ListHomePage extends StatefulWidget {
   ListHomePage({Key key, this.title, this.uID}) : super(key: key);
@@ -112,15 +114,7 @@ class _ListPageState extends State<ListPage> {
                         ),
                         Text("Please add a new player in main menu.",
                           style:TextStyle(fontSize: 15,color: Colors.grey)),
-                        RaisedButton(
-                          child: Text("Add New"),
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => AddPlayerPage()));
-                          },
-                        )
+
                       ],
                     )
                   ],
@@ -191,6 +185,7 @@ class _ListPageState extends State<ListPage> {
                           onTap: () => navigateToDetail(snapshot.data[index]),
                           onLongPress: () => navigateToEdit(snapshot.data[index]),
                         ),
+
                       ),
                     ],
                   );

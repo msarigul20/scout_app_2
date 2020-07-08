@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:flutter/material.dart";
-import 'package:scoutapp/auth.dart';
-import 'auth.dart';
+import 'screens/auth.dart';
+import 'screens/auth.dart';
 import 'root_page.dart';
 void main(){
   runApp(new MyApp());
