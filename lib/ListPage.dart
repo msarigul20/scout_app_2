@@ -23,7 +23,7 @@ class _ListHomePageState extends State<ListHomePage> {
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.search),
-              onPressed: (){
+              onPressed: () {
                 print("Search Tıklandı");
               },
             )
@@ -67,7 +67,7 @@ class _ListPageState extends State<ListPage> {
         .collection("players")
         .where("uID", isEqualTo: this.widget.my_uID)
         .getDocuments();
-    print("My_uID: " + this.widget.my_uID);
+//    print("My_uID: " + this.widget.my_uID);
     return qn.documents;
   }
 
@@ -76,123 +76,161 @@ class _ListPageState extends State<ListPage> {
     return tempUser.uid;
   }
 
+  String _currentUserUID;
+
   @override
   Widget build(BuildContext context) {
+    FirebaseAuth.instance.currentUser().then((user) {
+      _currentUserUID = user.uid;
+    });
     return Center(
-
         child: Container(
-
-      child: FutureBuilder(
-        future: myPlayers(),
-        builder: (_, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: Text(
-                "Loading",
-                style: TextStyle(fontSize: 32.0),
-              ),
-            );
-          }
-          else if (snapshot.data.length == 0) {
-            return Card(
-
-              child: InkWell(
-
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          "There is no player on your list!",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text("Please add a new player in main menu.",
-                          style:TextStyle(fontSize: 15,color: Colors.grey)),
-
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            );
-          }
-          else {
-            return ListView.builder(
-                itemCount: snapshot.data.length,
-                itemBuilder: (_, index) {
-                  print(snapshot.data.length);
-                  return Column(
-                    children: <Widget>[
-                      Card(
-                        child: InkWell(
-                          child: Row(
+      child: StreamBuilder<QuerySnapshot>(
+          stream: Firestore.instance.collection('players').snapshots(),
+          builder: (context, snapshot) {
+            return FutureBuilder(
+              future: myPlayers(),
+              builder: (_, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: Text(
+                      "Loading",
+                      style: TextStyle(fontSize: 32.0),
+                    ),
+                  );
+                } else if (snapshot.data.length == 0) {
+                  return Card(
+                    child: InkWell(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
-                              Container(
-                                margin: EdgeInsets.symmetric(
-                                  vertical: 35,
-                                  horizontal: 15,
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.lightGreenAccent,
-                                    width: 2,
-                                  ),
-                                ),
-                                padding: EdgeInsets.all(5),
-                                child: Text(
-                                  '${snapshot.data[index].data["name"].toString().trim().toUpperCase()[0]}' +
-                                      '${snapshot.data[index].data["surname"].toString().trim().toUpperCase()[0]}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    color: Colors.lightBlueAccent,
-                                  ),
+                              Text(
+                                "There is no player on your list!",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Text(
-                                        snapshot.data[index].data["name"].trim() +
-                                            ' ' +
-                                            snapshot.data[index].data["surname"].trim(),
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
+                              Text("Please add a new player in main menu.",
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.grey)),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                  );
+                } else {
+                  return ListView.builder(
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (_, index) {
+                        print(snapshot.data.length);
+                        return Column(
+                          children: <Widget>[
+                            Card(
+                              child: InkWell(
+                                child: Row(
+                                  children: <Widget>[
+                                    Container(
+                                      margin: EdgeInsets.symmetric(
+                                        vertical: 35,
+                                        horizontal: 15,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.lightGreenAccent,
+                                          width: 2,
                                         ),
                                       ),
-                                    ],
-                                  ),
-
-                                  Row(
-                                    children: <Widget>[
-                                      Text("Age: ",style: TextStyle(color: Colors.grey),),
-                                      Text(snapshot.data[index].data["age"].trim()),
-                                    ],
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                          onTap: () => navigateToDetail(snapshot.data[index]),
-                          onLongPress: () => navigateToEdit(snapshot.data[index]),
-                        ),
-
-                      ),
-                    ],
-                  );
-                });
-          }
-        },
-      ),
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                        '${snapshot.data[index].data["name"].toString().trim().toUpperCase()[0]}' +
+                                            '${snapshot.data[index].data["surname"].toString().trim().toUpperCase()[0]}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                          color: Colors.lightBlueAccent,
+                                        ),
+                                      ),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Row(
+                                          children: <Widget>[
+                                            Text(
+                                              snapshot.data[index].data["name"]
+                                                      .trim() +
+                                                  ' ' +
+                                                  snapshot.data[index]
+                                                      .data["surname"]
+                                                      .trim(),
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: <Widget>[
+                                            Text(
+                                              "Age: ",
+                                              style:
+                                                  TextStyle(color: Colors.grey),
+                                            ),
+                                            Text(snapshot
+                                                .data[index].data["age"].toString()
+                                                .trim()),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      width: 100,
+                                    ),
+                                    IconButton(
+                                        icon: Icon(Icons.delete),
+                                        onPressed: () async {
+                                          //delete stuff
+                                          print(
+                                              "Deleted player that has name: " +
+                                                  snapshot.data[index]
+                                                      .data["name"]);
+                                          setState(() {
+                                            Firestore.instance
+                                                .collection("players")
+                                                .document(snapshot
+                                                    .data[index].data["pID"])
+                                                .delete();
+                                          });
+                                        }),
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () {
+                                        navigateToEdit(snapshot.data[index]);
+                                      },
+                                    )
+                                  ],
+                                ),
+                                onTap: () =>
+                                    navigateToDetail(snapshot.data[index]),
+                                onLongPress: () =>
+                                    navigateToEdit(snapshot.data[index]),
+                              ),
+                            ),
+                          ],
+                        );
+                      });
+                }
+              },
+            );
+          }),
     ));
   }
 }
@@ -431,114 +469,113 @@ class _EditPageState extends State<EditPage> {
     final myAgeController =
         TextEditingController(text: this.widget.player["age"]);
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.player.data["name"] +
-              " " +
-              widget.player.data["surname"] +
-              " " +
-              "Edit"),
-        ),
-        body: SingleChildScrollView(
-          //fix oversize of keyboard first wrap widget and rename SingleChildScrollView
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: "Name",
-                                labelText: "Name"),
-                            controller: myNameController,
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                print("is not empty");
-                                //todo give error to warn user about is can not empty
-                                return 'Please enter some text';
-                              }
-                              return null;
-                            },
-                          ),
+      appBar: AppBar(
+        title: Text(widget.player.data["name"] +
+            " " +
+            widget.player.data["surname"] +
+            " " +
+            "Edit"),
+      ),
+      body: SingleChildScrollView(
+        //fix oversize of keyboard first wrap widget and rename SingleChildScrollView
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: "Name",
+                              labelText: "Name"),
+                          controller: myNameController,
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              print("is not empty");
+                              //todo give error to warn user about is can not empty
+                              return 'Please enter some text';
+                            }
+                            return null;
+                          },
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: "Surname",
-                                labelText: "Surname"),
-                            controller: mySurnameController,
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                print("is not empty");
-                                //todo give error to warn user about is can not empty
-                                return 'Please enter some text';
-                              }
-                              return null;
-                            },
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: "Surname",
+                              labelText: "Surname"),
+                          controller: mySurnameController,
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              print("is not empty");
+                              //todo give error to warn user about is can not empty
+                              return 'Please enter some text';
+                            }
+                            return null;
+                          },
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: "Age",
-                                labelText: "Age"),
-                            //todo force user to enter number imput
-                            controller: myAgeController,
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                print("is not empty");
-                                //todo give error to warn user about is can not empty
-                                return 'Please enter some text';
-                              }
-                              return null;
-                            },
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: "Age",
+                              labelText: "Age"),
+                          //todo force user to enter number imput
+                          controller: myAgeController,
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              print("is not empty");
+                              //todo give error to warn user about is can not empty
+                              return 'Please enter some text';
+                            }
+                            return null;
+                          },
                         ),
-
-                              RaisedButton(
-
-                                onPressed: () async {
-                                  if (_formKey.currentState.validate()) {
-                                    DocumentReference ref = Firestore.instance
-                                        .collection("players")
-                                        .document(widget.player.data["pID"]);
-                                    FirebaseUser tempUser =
-                                        await FirebaseAuth.instance.currentUser();
-                                    ref.setData({
-                                      "uID": tempUser.uid,
-                                      "pID": widget.player.data["pID"],
-                                      "name": myNameController.text,
-                                      "surname": mySurnameController.text,
-                                      "age": myAgeController.text,
-                                    });
-                                    /*print(myNameController.text);
+                      ),
+                      RaisedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState.validate()) {
+                            DocumentReference ref = Firestore.instance
+                                .collection("players")
+                                .document(widget.player.data["pID"]);
+                            FirebaseUser tempUser =
+                                await FirebaseAuth.instance.currentUser();
+                            ref.setData({
+                              "uID": tempUser.uid,
+                              "pID": widget.player.data["pID"],
+                              "name": myNameController.text,
+                              "surname": mySurnameController.text,
+                              "age": myAgeController.text,
+                            });
+                            /*print(myNameController.text);
                                     print(mySurnameController.text);
                                     print(myAgeController.text);*/
-                                  }
-                                  Navigator.pop(context);
-                                },
-                                child: Text("Edit"),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                          }
+
+                          Navigator.pop(context);
+                        },
+                        child: Text("Edit"),
+                      ),
+                    ],
                   ),
-              ),
+                ),
+              ],
             ),
-        );
+          ),
+        ),
+      ),
+    );
   }
 }

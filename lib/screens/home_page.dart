@@ -10,8 +10,6 @@ import 'auth.dart';
 //1-)Add delete functionality with user control.
 //2-)Search functionality
 
-
-
 class HomePage extends StatefulWidget {
   HomePage({this.auth, this.onSignedOut});
 
@@ -19,16 +17,15 @@ class HomePage extends StatefulWidget {
     String user = await this.auth.currentUser();
     return;
   }
- Future getUserUID() async {
-   FirebaseUser tempUser = await FirebaseAuth.instance.currentUser();
+
+  Future getUserUID() async {
+    FirebaseUser tempUser = await FirebaseAuth.instance.currentUser();
     final uid = tempUser.uid;
     return uid;
   }
 
   final BaseAuth auth;
   final VoidCallback onSignedOut;
-
-
 
   _HomePageState createState() => _HomePageState();
 }
@@ -62,47 +59,44 @@ class _HomePageState extends State<HomePage> {
   }
 
   String _currentUserUID;
+
   @override
   Widget build(BuildContext context) {
-
     FirebaseAuth.instance.currentUser().then((user) {
       _currentUserUID = user.uid;
     });
 
     final List<Map<String, Object>> _pages = [
-      {'page' : AddPlayerPage(), 'title' : 'Scout App'},
-      {'page' : ListPage(_currentUserUID), 'title' : 'List of Player'},
-      {'page' : AddPlayerPage(), 'title' : 'New Player'},
+      {'page': AddPlayerPage(), 'title': 'Scout App'},
+      {'page': ListPage(_currentUserUID), 'title': 'List of Player'},
+      {'page': AddPlayerPage(), 'title': 'New Player'},
     ];
 
-
     return Scaffold(
-        appBar:  AppBar(
-          title: new Text(_pages[_selectedPageIndex]['title']),
-          centerTitle: true,
-          actions: <Widget>[
-            FlatButton(
-              child: Text("Logout",
-                style: TextStyle(
-                  fontSize: 17.0,
-                  color: Colors.white),
-              ),
-              onPressed: _signOut,
-            )
-          ],
-
-        ),
-      body: _pages[_selectedPageIndex] ['page'],
+      appBar: AppBar(
+        title: new Text(_pages[_selectedPageIndex]['title']),
+        centerTitle: true,
+        actions: <Widget>[
+          FlatButton(
+            child: Text(
+              "Logout",
+              style: TextStyle(fontSize: 17.0, color: Colors.white),
+            ),
+            onPressed: _signOut,
+          )
+        ],
+      ),
+      body: _pages[_selectedPageIndex]['page'],
       bottomNavigationBar: BottomNavigationBar(
         onTap: _selectPage,
         backgroundColor: Theme.of(context).primaryColor,
         unselectedItemColor: Colors.black,
         selectedItemColor: Colors.white,
-        currentIndex: _selectedPageIndex ,
+        currentIndex: _selectedPageIndex,
         type: BottomNavigationBarType.shifting,
         items: [
           BottomNavigationBarItem(
-            backgroundColor: Theme.of(context).primaryColor ,
+            backgroundColor: Theme.of(context).primaryColor,
             icon: Icon(Icons.home),
             title: Text('Home'),
           ),
@@ -115,17 +109,12 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Theme.of(context).primaryColor,
             icon: Icon(Icons.person_add),
             title: Text('Add Player'),
-
           ),
         ],
       ),
     );
   }
-
-
 }
-
-
 
 class DeleteAllStuff extends StatelessWidget {
   @override
@@ -148,20 +137,15 @@ class DeleteAllStuff extends StatelessWidget {
   }
 }
 
-
 class AddPlayerPage extends StatefulWidget {
-
   @override
   _AddPlayerPageState createState() => _AddPlayerPageState();
-
-
 }
 
 class _AddPlayerPageState extends State<AddPlayerPage> {
   final myNameController = TextEditingController();
   final mySurnameController = TextEditingController();
   final myAgeController = TextEditingController();
-
 
   @override
   void dispose() {
@@ -175,90 +159,94 @@ class _AddPlayerPageState extends State<AddPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
-
     FirebaseAuth.instance.currentUser().then((user) {
       _currentUserUID = user.uid;
     });
     return Scaffold(
       body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                        border: const OutlineInputBorder(), hintText: "Name"),
-                    controller: myNameController,
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                      border: const OutlineInputBorder(), hintText: "Name"),
+                  controller: myNameController,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                        border: const OutlineInputBorder(), hintText: "Surname"),
-                    controller: mySurnameController,
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                      border: const OutlineInputBorder(), hintText: "Surname"),
+                  controller: mySurnameController,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                        border: const OutlineInputBorder(), hintText: "Age"),
-                    controller: myAgeController,
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                      border: const OutlineInputBorder(), hintText: "Age"),
+                  controller: myAgeController,
                 ),
-                new RaisedButton(
-                  onPressed: ()  {
-                    // to get id of owner(pID)
-                   showDialog(
-                     context: context,
-                     builder: (_) => AlertDialog(
-                       title: Text("Adding New Player"),
-                       content: Text("Are you sure?"),
-                       actions: <Widget>[
-                         FlatButton(
-                           onPressed: () {
-                   Navigator.of(context).pop();
-                   },
-                         child: Text('NO'),
-                     ),
-                         FlatButton(
-                           onPressed: () async {
-                             DocumentReference ref = await Firestore.instance
-                                 .collection("players")
-                                 .add({"uID":"","pID": "", "name": "", "surname": "", "age": ""});
-                             String tempDocID = ref.documentID;
-                             FirebaseUser tempUser = await FirebaseAuth.instance.currentUser();
-                             ref.setData({
-                               "uID":tempUser.uid,
-                               "pID": tempDocID,
-                               "name": myNameController.text,
-                               "surname": mySurnameController.text,
-                               "age": myAgeController.text,
-                             });
-                             Navigator.of(context).pop();
-                             FocusScope.of(context).requestFocus(FocusNode());
-
-
-                           },
-                         child: Text('Yes')
-                         )
-                       ],
-                     ),
-                     barrierDismissible: false,
-                   );
-
-
-
-                  },
-                  child: Text('Add Player'),
-                ),
-              ],
-            ),
+              ),
+              new RaisedButton(
+                onPressed: () {
+                  // to get id of owner(pID)
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text("Adding New Player"),
+                      content: Text("Are you sure?"),
+                      actions: <Widget>[
+                        FlatButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('NO'),
+                        ),
+                        FlatButton(
+                            onPressed: () async {
+                              int fixInteger = 0;
+                              DocumentReference ref = await Firestore.instance
+                                  .collection("players")
+                                  .add({
+                                "uID": "",
+                                "pID": "",
+                                "name": "",
+                                "surname": "",
+                                "age": fixInteger
+                              });
+                              String tempDocID = ref.documentID;
+                              FirebaseUser tempUser =
+                                  await FirebaseAuth.instance.currentUser();
+                              ref.setData({
+                                "uID": tempUser.uid,
+                                "pID": tempDocID,
+                                "name": myNameController.text,
+                                "surname": mySurnameController.text,
+                                "age": int.parse(myAgeController.text),
+                              });
+                              myNameController.clear();
+                              mySurnameController.clear();
+                              myAgeController.clear();
+                              Navigator.of(context).pop();
+                              FocusScope.of(context).requestFocus(FocusNode());
+                            },
+                            child: Text('Yes'))
+                      ],
+                    ),
+                    barrierDismissible: false,
+                  );
+                },
+                child: Text('Add Player'),
+              ),
+            ],
           ),
+        ),
       ),
     );
   }
