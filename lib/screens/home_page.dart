@@ -79,6 +79,18 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         appBar:  AppBar(
           title: new Text(_pages[_selectedPageIndex]['title']),
+          centerTitle: true,
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Logout",
+                style: TextStyle(
+                  fontSize: 17.0,
+                  color: Colors.white),
+              ),
+              onPressed: _signOut,
+            )
+          ],
+
         ),
       body: _pages[_selectedPageIndex] ['page'],
       bottomNavigationBar: BottomNavigationBar(
